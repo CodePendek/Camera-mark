@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Kamera</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="p-3 bg-stone-50">
+  <nav class="flex gap-3 my-2 justify-end text-slate-50 mb-2">
+    <button id="rotate"><i data-feather=refresh-cw class="text-slate-700"></i></button>
+    <button id="help"><i data-feather=book class="text-slate-700"></i></i>
+    <button id="mode"><i data-feather=moon class="text-slate-700"></i></i>
+  </nav>
+  <!-- Video Stream -->
+  <video id="video" autoplay playsinline class="rounded-lg shadow-lg mb-4"></video>
+
+  <!-- Canvas (Tersembunyi) -->
+  <canvas id="canvas" class="hidden"></canvas>
+
+  <!-- Modal untuk Preview -->
+  <div id="modal" class="z-20 bg-stone-900/90 fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden">
+    <div class="bg-white text-gray-900 rounded-lg p-3 w-4/5 max-w-md shadow-lg">
+      <img id="preview" alt="Preview" class="w-full rounded-lg" />
+      <div class="mt-4 flex justify-end gap-3">
+        <button id="retake" class="bg-none text-slate-700 px-4 py-2 rounded-lg hover:text-gray-600">
+          Ambil Ulang
+        </button>
+        <button id="download" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+          Simpan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal untuk Pengaturan -->
+  <div id="settings-modal" class="fixed z-20 inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden">
+    <div class="bg-white text-gray-900 rounded-lg p-6 w-4/5 max-w-md shadow-lg">
+      <h2 class="text-lg font-bold mb-4">Pengaturan</h2>
+      <div class="mb-4">
+        <label for="time" class="block text-sm font-medium">Pilih Waktu</label>
+        <select id="time" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          <option value="07:30">Masuk 07:30</option>
+          <option value="13:30">Masuk 13:30</option>
+          <option value="19:30">Masuk 19:30</option>
+          <option value="11:30">Pulang 11:30</option>
+          <option value="17:30">Pulang 17:30</option>
+          <option value="07:30">Pulang 07:30</option>
+          <option value="12:00">Lembur 12:00</option>
+          <option value="18:00">Lembur 18:00</option>
+          <option value="03:00">Lembur 03:00</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label for="watermark" class="block text-sm font-medium">Posisi Watermark</label>
+        <select id="watermark" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          <option value="kiri_atas">Kiri Atas</option>
+          <option value="kanan_atas">Kanan Atas</option>
+          <option value="kiri_bawah">Kiri Bawah</option>
+          <option value="kanan_bawah">Kanan Bawah</option>
+          <option value="center">Tengah</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label for="round-time" class="inline-flex items-center">
+          <input id="round-time" type="checkbox" class="rounded border-gray-300 text-blue-500 shadow-sm focus:ring-blue-500" checked>
+          <span class="ml-2 text-sm">Bulatkan Waktu</span>
+        </label>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button id="exit-settings" class="bg-none text-slate-700 px-4 py-2 rounded-lg hover:text-gray-600">Keluar</button>
+        <button id="ok" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tombol Aksi -->
+  <div class="absolute bottom-[100px] flex justify-evenly w-full max-w-md">
+    <button id="settings"><i class="text-slate-700 text-2xl" data-feather="settings"></i></button>
+    <button id="shutter" class="w-[90px] border-slate-700 aspect-square border-[.3rem] rounded-full"></button>
+    <button id="swap"><i data-feather="repeat" class="text-slate-700 text-7xl"></i></button>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+      feather.replace();
+    </script>
+</body>
+</html>
