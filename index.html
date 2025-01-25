@@ -8,9 +8,9 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/feather-icons"></script>
 </head>
-<body class="p-3 bg-stone-50">
+<body class="p-3 bg-stone-50 dark:bg-gray-900 dark:text-gray-50 transition-colors duration-300">
   <nav class="flex gap-3 my-2 justify-end text-slate-50 mb-2">
-    <button id="rotate"><i data-feather=refresh-cw class="text-slate-700"></i></button>
+    <button id="upload"><i data-feather=upload class="dark:text-slate-200 text-slate-700"></i></i>
     <button id="help"><i data-feather=book class="text-slate-700"></i></i>
     <button id="mode"><i data-feather=moon class="text-slate-700"></i></i>
   </nav>
@@ -35,6 +35,25 @@
     </div>
   </div>
 
+  <!-- Modal help -->
+  <div id="helpModal" class="fixed z-20 inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden">
+    <div class="bg-white text-gray-900 rounded-lg p-6 w-4/5 max-w-md shadow-lg">
+      <h2 class="text-lg font-bold mb-4">Bantuan Penggunaan</h2>
+      <ul class="space-y-2 mb-4">
+        <li>📸 Tekan tombol bulat di tengah untuk mengambil foto</li>
+        <li>🔄 Gunakan tombol rotate untuk mengubah orientasi watermark</li>
+        <li>📱 Gunakan tombol swap untuk mengganti kamera</li>
+        <li>⚙️ Gunakan tombol settings untuk mengatur watermark</li>
+        <li>🌓 Gunakan tombol mode untuk mengubah tema</li>
+      </ul>
+      <div class="flex justify-end">
+        <button id="closeHelp" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal untuk Pengaturan -->
   <div id="settings-modal" class="fixed z-20 inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden">
     <div class="bg-white text-gray-900 rounded-lg p-6 w-4/5 max-w-md shadow-lg">
@@ -50,7 +69,52 @@
           <option value="07:30">Pulang 07:30</option>
           <option value="12:00">Lembur 12:00</option>
           <option value="18:00">Lembur 18:00</option>
-          <option value="03:00">Lembur 03:00</option>
+          <option value="03:30">Lembur 03:30</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label for="watermark" class="block text-sm font-medium">Posisi Watermark</label>
+        <select id="watermark" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          <option value="kiri_atas">Kiri Atas</option>
+          <option value="kanan_atas">Kanan Atas</option>
+          <option value="kiri_bawah">Kiri Bawah</option>
+          <option value="kanan_bawah">Kanan Bawah</option>
+          <option value="center">Tengah</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label for="round-time" class="inline-flex items-center">
+          <input id="round-time" type="checkbox" class="rounded border-gray-300 text-blue-500 shadow-sm focus:ring-blue-500" checked>
+          <span class="ml-2 text-sm">Bulatkan Waktu</span>
+        </label>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button id="exit-settings" class="bg-none text-slate-700 px-4 py-2 rounded-lg hover:text-gray-600">Keluar</button>
+        <button id="ok" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">OK</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal untuk #upload -->
+  <div id="upload-modal" class="fixed z-20 inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden">
+    <div class="bg-white text-gray-900 rounded-lg p-6 w-4/5 max-w-md shadow-lg">
+      <h2 class="text-lg font-bold mb-4">Upload foto</h2>
+      <div class="mb-4">
+        <label for="file" class="block text-sm font-medium">Pilih foto</label>
+        <input type="file" id="file" class="block w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <div class="mb-4">
+        <label for="time" class="block text-sm font-medium">Pilih Waktu</label>
+        <select id="time" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          <option value="07:30">Masuk 07:30</option>
+          <option value="13:30">Masuk 13:30</option>
+          <option value="19:30">Masuk 19:30</option>
+          <option value="11:30">Pulang 11:30</option>
+          <option value="17:30">Pulang 17:30</option>
+          <option value="07:30">Pulang 07:30</option>
+          <option value="12:00">Lembur 12:00</option>
+          <option value="18:00">Lembur 18:00</option>
+          <option value="03:30">Lembur 03:30</option>
         </select>
       </div>
       <div class="mb-4">
@@ -79,11 +143,28 @@
   <!-- Tombol Aksi -->
   <div class="absolute bottom-[100px] flex justify-evenly w-full max-w-md">
     <button id="settings"><i class="text-slate-700 text-2xl" data-feather="settings"></i></button>
-    <button id="shutter" class="w-[90px] border-slate-700 aspect-square border-[.3rem] rounded-full"></button>
+    <button id="shutter" class="active:ring-[1rem] transition-all duration-100 w-[90px] border-slate-700 aspect-square border-[.3rem] rounded-full"></button>
     <button id="swap"><i data-feather="repeat" class="text-slate-700 text-7xl"></i></button>
   </div>
 
   <script src="app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            // Anda dapat menambahkan warna kustom dark mode di sini
+            dark: {
+              background: '#1a202c',
+              text: '#e2e8f0'
+            }
+          }
+        }
+      }
+    }
+  </script>
   <script>
       feather.replace();
     </script>

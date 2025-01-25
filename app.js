@@ -3,19 +3,25 @@ const canvas = document.getElementById('canvas');
 const shutter = document.getElementById('shutter');
 const swap = document.getElementById('swap');
 const settings = document.getElementById('settings');
+const upload = document.getElementById('upload');
 const modal = document.getElementById('modal');
 const preview = document.getElementById('preview');
 const download = document.getElementById('download');
 const retake = document.getElementById('retake');
 const settingsModal = document.getElementById('settings-modal');
+const uploadModal = document.getElementById('upload-modal');
 const timeSelect = document.getElementById('time');
 const watermarkSelect = document.getElementById('watermark');
 const roundTimeCheckbox = document.getElementById('round-time');
 const okButton = document.getElementById('ok');
 const exitSettingsButton = document.getElementById('exit-settings');
-const rotateButton = document.getElementById('rotate');
 const helpButton = document.getElementById('help');
 const modeButton = document.getElementById('mode');
+const helpModal = document.getElementById("helpModal")
+const closeHelp = document.getElementById("closeHelp")
+const fileInput = document.getElementById('file');
+const uploadOkButton = document.querySelector('#upload-modal #ok');
+const uploadExitButton = document.querySelector('#upload-modal #exit-settings');
 
 let currentStream = null;
 let useFrontCamera = true;
@@ -24,27 +30,58 @@ let watermarkPosition = 'center';
 let watermarkRotation = 0;
 let isDarkMode = false;
 
-// Membuat modal help
-const helpModal = document.createElement('div');
-helpModal.className = 'fixed z-20 inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden';
-helpModal.innerHTML = `
-  <div class="bg-white text-gray-900 rounded-lg p-6 w-4/5 max-w-md shadow-lg">
-    <h2 class="text-lg font-bold mb-4">Bantuan Penggunaan</h2>
-    <ul class="space-y-2 mb-4">
-      <li>📸 Tekan tombol bulat di tengah untuk mengambil foto</li>
-      <li>🔄 Gunakan tombol rotate untuk mengubah orientasi watermark</li>
-      <li>📱 Gunakan tombol swap untuk mengganti kamera</li>
-      <li>⚙️ Gunakan tombol settings untuk mengatur watermark</li>
-      <li>🌓 Gunakan tombol mode untuk mengubah tema</li>
-    </ul>
-    <div class="flex justify-end">
-      <button id="closeHelp" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-        Tutup
-      </button>
-    </div>
-  </div>
-`;
-document.body.appendChild(helpModal);
+// Fungsi untuk toggle dark mode
+function toggleDarkMode() {
+  const htmlElement = document.documentElement;
+  htmlElement.classList.toggle('dark');
+  
+  // Update icon
+  const icon = modeButton.querySelector('i');
+  const currentMode = htmlElement.classList.contains('dark');
+  
+  if (currentMode) {
+    icon.setAttribute('data-feather', 'sun');
+  } else {
+    icon.setAttribute('data-feather', 'moon');
+  }
+  
+  // Refresh Feather Icons
+  feather.replace();
+  
+  // Simpan preferensi mode ke localStorage
+  localStorage.setItem('darkMode', currentMode);
+}
+
+// Fungsi untuk menginisialisasi dark mode
+function initDarkMode() {
+  const htmlElement = document.documentElement;
+  const savedMode = localStorage.getItem('darkMode');
+  
+  // Cek apakah ada mode yang tersimpan
+  if (savedMode === 'true') {
+    htmlElement.classList.add('dark');
+  } else if (savedMode === 'false') {
+    htmlElement.classList.remove('dark');
+  } else {
+    // Default menggunakan preferensi sistem
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      htmlElement.classList.add('dark');
+    }
+  }
+  
+  // Update icon sesuai mode
+  const icon = modeButton.querySelector('i');
+  const currentMode = htmlElement.classList.contains('dark');
+  
+  icon.setAttribute('data-feather', currentMode ? 'sun' : 'moon');
+  feather.replace();
+}
+
+// Event listener untuk toggle dark mode
+modeButton.addEventListener("click", toggleDarkMode);
+
+// Inisialisasi dark mode saat halaman dimuat
+document.addEventListener('DOMContentLoaded', initDarkMode);
 
 // Fungsi untuk mendapatkan waktu saat ini dalam format HH:mm
 function getCurrentTime() {
@@ -90,8 +127,6 @@ async function startCamera() {
     alert('Tidak dapat mengakses kamera. Periksa izin browser.');
   }
 }
-
-// ... (kode sebelumnya tetap sama sampai fungsi captureImage)
 
 function captureImage() {
   if (!watermarkText) {
@@ -159,8 +194,6 @@ function captureImage() {
   // Translate ke posisi watermark
   context.translate(x, y);
   
-  // Rotate watermark
-  context.rotate(watermarkRotation * (Math.PI / 180));
   
   // Alignment berdasarkan posisi
   let textX = -textWidth / 2; // Default center alignment
@@ -190,8 +223,6 @@ function captureImage() {
   modal.classList.remove('hidden');
 }
 
-// ... (kode selanjutnya tetap sama)
-
 // Fungsi untuk mengunduh gambar
 function downloadImage() {
   const link = document.createElement('a');
@@ -212,23 +243,12 @@ function swapCamera() {
   startCamera();
 }
 
-// Fungsi untuk merotasi watermark
-function rotateWatermark() {
-  watermarkRotation = (watermarkRotation + 90) % 360;
-}
-
 // Fungsi untuk toggle dark mode
-function toggleDarkMode() {
-  isDarkMode = !isDarkMode;
-  if (isDarkMode) {
-    document.body.classList.add('bg-stone-900');
-    modeButton.innerHTML = '<i data-feather="sun" class="text-slate-50"></i>';
-  } else {
-    document.body.classList.remove('bg-stone-900');
-    modeButton.innerHTML = '<i data-feather="moon" class="text-slate-700"></i>';
-  }
-  feather.replace();
-}
+modeButton.addEventListener("click", ()=>{
+  document.body.classList.toggle("dark")
+  let icon = modeButton.querySelector("i")
+  console.log(icon.dataFeather)
+})
 
 // Fungsi untuk memodifikasi waktu jika "bulatkan waktu" tidak dicentang
 function adjustTimeRandomly(timeString) {
@@ -275,11 +295,13 @@ shutter.addEventListener('click', captureImage);
 download.addEventListener('click', downloadImage);
 retake.addEventListener('click', retakeImage);
 swap.addEventListener('click', swapCamera);
-rotateButton.addEventListener('click', rotateWatermark);
-modeButton.addEventListener('click', toggleDarkMode);
 
 settings.addEventListener('click', () => {
   settingsModal.classList.remove('hidden');
+});
+
+upload.addEventListener('click', () => {
+  uploadModal.classList.remove('hidden');
 });
 
 okButton.addEventListener('click', () => {
@@ -297,6 +319,137 @@ helpButton.addEventListener('click', () => {
 
 document.getElementById('closeHelp').addEventListener('click', () => {
   helpModal.classList.add('hidden');
+});
+
+// Fungsi untuk menangani upload foto
+function handleFileUpload() {
+  const file = fileInput.files[0];
+  if (!file) {
+    alert('Pilih foto terlebih dahulu');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = new Image();
+    img.onload = function() {
+      // Bersihkan canvas
+      const context = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Gambar foto yang diunggah
+      context.drawImage(img, 0, 0);
+
+      // Ambil waktu dan posisi watermark dari pilihan
+      let selectedTime = document.querySelector('#upload-modal #time').value;
+      const watermarkPosition = document.querySelector('#upload-modal #watermark').value;
+      const roundTimeChecked = document.querySelector('#upload-modal #round-time').checked;
+
+      if (!roundTimeChecked) {
+        selectedTime = adjustTimeRandomly(selectedTime);
+      }
+
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+
+      const watermarkText = `${day}/${month}/${year} ${selectedTime}`;
+
+      // Setup font dan style untuk watermark
+      context.font = '34px "Inter", sans-serif';
+      context.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      context.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      context.shadowBlur = 4;
+      context.lineWidth = 2;
+
+      // Hitung dimensi teks watermark
+      const textMetrics = context.measureText(watermarkText);
+      const textWidth = textMetrics.width;
+      const textHeight = 34;
+
+      // Tentukan posisi watermark (sama dengan logika di captureImage)
+      let x, y;
+      const padding = 50;
+      
+      switch (watermarkPosition) {
+        case 'kiri_atas':
+          x = padding;
+          y = padding + (textHeight / 2);
+          break;
+        case 'kanan_atas':
+          x = canvas.width - padding;
+          y = padding + (textHeight / 2);
+          break;
+        case 'kiri_bawah':
+          x = padding;
+          y = canvas.height - padding;
+          break;
+        case 'kanan_bawah':
+          x = canvas.width - padding;
+          y = canvas.height - padding;
+          break;
+        default: // center
+          x = canvas.width / 2;
+          y = canvas.height / 2;
+      }
+
+      // Simpan state context
+      context.save();
+      
+      // Translate ke posisi watermark
+      context.translate(x, y);
+      
+      // Alignment berdasarkan posisi
+      let textX = -textWidth / 2; // Default center alignment
+      let textY = 0;
+
+      switch (watermarkPosition) {
+        case 'kiri_atas':
+        case 'kiri_bawah':
+          textX = 0;
+          break;
+        case 'kanan_atas':
+        case 'kanan_bawah':
+          textX = -textWidth;
+          break;
+      }
+
+      // Gambar watermark
+      context.fillText(watermarkText, textX, textY);
+      
+      // Restore context state
+      context.restore();
+
+      // Tampilkan preview
+      const imageData = canvas.toDataURL('image/png');
+      preview.src = imageData;
+      modal.classList.remove('hidden');
+      uploadModal.classList.add('hidden');
+    };
+
+    img.src = event.target.result;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+// Event listener untuk upload
+uploadOkButton.addEventListener('click', handleFileUpload);
+
+// Event listener untuk menutup modal upload
+uploadExitButton.addEventListener('click', () => {
+  uploadModal.classList.add('hidden');
+  fileInput.value = ''; // Reset file input
+});
+
+// Reset file input jika modal ditutup
+uploadModal.addEventListener('click', (event) => {
+  if (event.target === uploadModal) {
+    uploadModal.classList.add('hidden');
+    fileInput.value = ''; // Reset file input
+  }
 });
 
 // Memulai kamera saat halaman dimuat
