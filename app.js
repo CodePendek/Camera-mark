@@ -17,8 +17,8 @@ const okButton = document.getElementById('ok');
 const exitSettingsButton = document.getElementById('exit-settings');
 const helpButton = document.getElementById('help');
 const modeButton = document.getElementById('mode');
-const helpModal = document.getElementById("helpModal")
-const closeHelp = document.getElementById("closeHelp")
+const helpModal = document.getElementById("helpModal");
+const closeHelp = document.getElementById("closeHelp");
 const fileInput = document.getElementById('file');
 const uploadOkButton = document.querySelector('#upload-modal #ok');
 const uploadExitButton = document.querySelector('#upload-modal #exit-settings');
@@ -34,20 +34,20 @@ let isDarkMode = false;
 function toggleDarkMode() {
   const htmlElement = document.documentElement;
   htmlElement.classList.toggle('dark');
-  
+
   // Update icon
   const icon = modeButton.querySelector('i');
   const currentMode = htmlElement.classList.contains('dark');
-  
+
   if (currentMode) {
     icon.setAttribute('data-feather', 'sun');
   } else {
     icon.setAttribute('data-feather', 'moon');
   }
-  
+
   // Refresh Feather Icons
   feather.replace();
-  
+
   // Simpan preferensi mode ke localStorage
   localStorage.setItem('darkMode', currentMode);
 }
@@ -56,7 +56,7 @@ function toggleDarkMode() {
 function initDarkMode() {
   const htmlElement = document.documentElement;
   const savedMode = localStorage.getItem('darkMode');
-  
+
   // Cek apakah ada mode yang tersimpan
   if (savedMode === 'true') {
     htmlElement.classList.add('dark');
@@ -68,11 +68,11 @@ function initDarkMode() {
       htmlElement.classList.add('dark');
     }
   }
-  
+
   // Update icon sesuai mode
   const icon = modeButton.querySelector('i');
   const currentMode = htmlElement.classList.contains('dark');
-  
+
   icon.setAttribute('data-feather', currentMode ? 'sun' : 'moon');
   feather.replace();
 }
@@ -128,6 +128,75 @@ async function startCamera() {
   }
 }
 
+// Fungsi untuk menghitung ukuran font berdasarkan lebar gambar
+function calculateFontSize(imageWidth) {
+  return Math.round(imageWidth * 0.031); // 5% dari lebar gambar
+}
+
+// Fungsi untuk menggambar watermark
+function drawWatermark(context, imageWidth, imageHeight, watermarkText, watermarkPosition) {
+  const fontSize = calculateFontSize(imageWidth);
+  context.font = `${fontSize}px "Inter", sans-serif`;
+
+  // Hitung dimensi teks watermark
+  const textMetrics = context.measureText(watermarkText);
+  const textWidth = textMetrics.width;
+  const textHeight = fontSize;
+
+  // Tentukan posisi watermark
+  let x, y;
+  const padding = imageWidth * 0.032; // 5% dari lebar gambar
+
+  switch (watermarkPosition) {
+    case 'kiri_atas':
+      x = padding;
+      y = padding + (textHeight / 2);
+      break;
+    case 'kanan_atas':
+      x = imageWidth - padding;
+      y = padding + (textHeight / 2);
+      break;
+    case 'kiri_bawah':
+      x = padding;
+      y = imageHeight - padding;
+      break;
+    case 'kanan_bawah':
+      x = imageWidth - padding;
+      y = imageHeight - padding;
+      break;
+    default: // center
+      x = imageWidth / 2;
+      y = imageHeight / 2;
+  }
+
+  // Simpan state context
+  context.save();
+
+  // Translate ke posisi watermark
+  context.translate(x, y);
+
+  // Alignment berdasarkan posisi
+  let textX = -textWidth / 2; // Default center alignment
+  let textY = 0;
+
+  switch (watermarkPosition) {
+    case 'kiri_atas':
+    case 'kiri_bawah':
+      textX = 0;
+      break;
+    case 'kanan_atas':
+    case 'kanan_bawah':
+      textX = -textWidth;
+      break;
+  }
+
+  // Gambar watermark
+  context.fillText(watermarkText, textX, textY);
+
+  // Restore context state
+  context.restore();
+}
+
 function captureImage() {
   if (!watermarkText) {
     watermarkText = getDefaultWatermark();
@@ -149,74 +218,14 @@ function captureImage() {
   // Reset transformasi setelah menggambar video
   context.setTransform(1, 0, 0, 1, 0, 0);
 
-  // Setup font dan style untuk watermark
-  context.font = '34px "Inter", sans-serif';
+  // Setup style untuk watermark
   context.fillStyle = 'rgba(255, 255, 255, 0.8)';
   context.shadowColor = 'rgba(0, 0, 0, 0.8)';
   context.shadowBlur = 4;
   context.lineWidth = 2;
 
-  // Hitung dimensi teks watermark
-  const textMetrics = context.measureText(watermarkText);
-  const textWidth = textMetrics.width;
-  // Perkiraan tinggi teks (karena tidak ada API langsung untuk mengukur tinggi)
-  const textHeight = 34; // Sesuai dengan ukuran font
-
-  // Tentukan posisi watermark
-  let x, y;
-  const padding = 50; // Jarak dari tepi
-  
-  switch (watermarkPosition) {
-    case 'kiri_atas':
-      x = padding;
-      y = padding + (textHeight / 2);
-      break;
-    case 'kanan_atas':
-      x = canvas.width - padding;
-      y = padding + (textHeight / 2);
-      break;
-    case 'kiri_bawah':
-      x = padding;
-      y = canvas.height - padding;
-      break;
-    case 'kanan_bawah':
-      x = canvas.width - padding;
-      y = canvas.height - padding;
-      break;
-    default: // center
-      x = canvas.width / 2;
-      y = canvas.height / 2;
-  }
-
-  // Simpan state context
-  context.save();
-  
-  // Translate ke posisi watermark
-  context.translate(x, y);
-  
-  
-  // Alignment berdasarkan posisi
-  let textX = -textWidth / 2; // Default center alignment
-  let textY = 0;
-
-  // Sesuaikan alignment berdasarkan posisi
-  switch (watermarkPosition) {
-    case 'kiri_atas':
-    case 'kiri_bawah':
-      textX = 0;
-      break;
-    case 'kanan_atas':
-    case 'kanan_bawah':
-      textX = -textWidth;
-      break;
-    // center tetap menggunakan default (-textWidth / 2)
-  }
-
-  // Gambar watermark
-  context.fillText(watermarkText, textX, textY);
-  
-  // Restore context state
-  context.restore();
+  // Gambar watermark dengan ukuran font dinamis
+  drawWatermark(context, video.videoWidth, video.videoHeight, watermarkText, watermarkPosition);
 
   const imageData = canvas.toDataURL('image/png');
   preview.src = imageData;
@@ -242,13 +251,6 @@ function swapCamera() {
   useFrontCamera = !useFrontCamera;
   startCamera();
 }
-
-// Fungsi untuk toggle dark mode
-modeButton.addEventListener("click", ()=>{
-  document.body.classList.toggle("dark")
-  let icon = modeButton.querySelector("i")
-  console.log(icon.dataFeather)
-})
 
 // Fungsi untuk memodifikasi waktu jika "bulatkan waktu" tidak dicentang
 function adjustTimeRandomly(timeString) {
@@ -329,10 +331,15 @@ function handleFileUpload() {
     return;
   }
 
+  if (!file.type.startsWith('image/')) {
+    alert('File yang diunggah harus berupa gambar');
+    return;
+  }
+
   const reader = new FileReader();
-  reader.onload = function(event) {
+  reader.onload = function (event) {
     const img = new Image();
-    img.onload = function() {
+    img.onload = function () {
       // Bersihkan canvas
       const context = canvas.getContext('2d');
       canvas.width = img.width;
@@ -357,70 +364,14 @@ function handleFileUpload() {
 
       const watermarkText = `${day}/${month}/${year} ${selectedTime}`;
 
-      // Setup font dan style untuk watermark
-      context.font = '34px "Inter", sans-serif';
+      // Setup style untuk watermark
       context.fillStyle = 'rgba(255, 255, 255, 0.8)';
       context.shadowColor = 'rgba(0, 0, 0, 0.8)';
       context.shadowBlur = 4;
       context.lineWidth = 2;
 
-      // Hitung dimensi teks watermark
-      const textMetrics = context.measureText(watermarkText);
-      const textWidth = textMetrics.width;
-      const textHeight = 34;
-
-      // Tentukan posisi watermark (sama dengan logika di captureImage)
-      let x, y;
-      const padding = 50;
-      
-      switch (watermarkPosition) {
-        case 'kiri_atas':
-          x = padding;
-          y = padding + (textHeight / 2);
-          break;
-        case 'kanan_atas':
-          x = canvas.width - padding;
-          y = padding + (textHeight / 2);
-          break;
-        case 'kiri_bawah':
-          x = padding;
-          y = canvas.height - padding;
-          break;
-        case 'kanan_bawah':
-          x = canvas.width - padding;
-          y = canvas.height - padding;
-          break;
-        default: // center
-          x = canvas.width / 2;
-          y = canvas.height / 2;
-      }
-
-      // Simpan state context
-      context.save();
-      
-      // Translate ke posisi watermark
-      context.translate(x, y);
-      
-      // Alignment berdasarkan posisi
-      let textX = -textWidth / 2; // Default center alignment
-      let textY = 0;
-
-      switch (watermarkPosition) {
-        case 'kiri_atas':
-        case 'kiri_bawah':
-          textX = 0;
-          break;
-        case 'kanan_atas':
-        case 'kanan_bawah':
-          textX = -textWidth;
-          break;
-      }
-
-      // Gambar watermark
-      context.fillText(watermarkText, textX, textY);
-      
-      // Restore context state
-      context.restore();
+      // Gambar watermark dengan ukuran font dinamis
+      drawWatermark(context, img.width, img.height, watermarkText, watermarkPosition);
 
       // Tampilkan preview
       const imageData = canvas.toDataURL('image/png');

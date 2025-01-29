@@ -1,3 +1,24 @@
-#swap{
-  
+.dark{
+  *{
+    color: #888;
+  }
+  body{
+    background: #111;
+    button{
+      color: #ddd;
+    }
+    #modal, #helpModal, #upload-modal, #settings-modal{
+      select{
+        background: #111;
+        border: none;
+        appearance: none;
+      }
+      .bg-white{
+        background: #222;
+      }
+    }
+  }
+  #shutter{
+    border-color: #888;
+  }
 }

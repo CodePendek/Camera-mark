@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/feather-icons"></script>
 </head>
-<body class="p-3 bg-stone-50 dark:bg-gray-900 dark:text-gray-50 transition-colors duration-300">
+<body class="p-3 bg-stone-50 transition-colors duration-300">
   <nav class="flex gap-3 my-2 justify-end text-slate-50 mb-2">
     <button id="upload"><i data-feather=upload class="dark:text-slate-200 text-slate-700"></i></i>
     <button id="help"><i data-feather=book class="text-slate-700"></i></i>
@@ -106,6 +106,7 @@
       <div class="mb-4">
         <label for="time" class="block text-sm font-medium">Pilih Waktu</label>
         <select id="time" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          <option value="">Waktu saat ini</option>
           <option value="07:30">Masuk 07:30</option>
           <option value="13:30">Masuk 13:30</option>
           <option value="19:30">Masuk 19:30</option>
@@ -157,8 +158,8 @@
           colors: {
             // Anda dapat menambahkan warna kustom dark mode di sini
             dark: {
-              background: '#1a202c',
-              text: '#e2e8f0'
+              background: '#000',
+              text: '#fff'
             }
           }
         }
