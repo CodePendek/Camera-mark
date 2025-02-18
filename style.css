@@ -1,24 +1,69 @@
-.dark{
-  *{
-    color: #888;
-  }
-  body{
-    background: #111;
-    button{
-      color: #ddd;
-    }
-    #modal, #helpModal, #upload-modal, #settings-modal{
-      select{
-        background: #111;
-        border: none;
-        appearance: none;
-      }
-      .bg-white{
-        background: #222;
-      }
-    }
-  }
-  #shutter{
-    border-color: #888;
-  }
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background 0.3s, color 0.3s;
+}
+.navbar {
+  background: var(--navbar-bg);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px var(--shadow-color);
+}
+.modal-box {
+  background: var(--modal-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+}
+.btn-primary {
+  background: var(--primary-color);
+  border: none;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+.upload-label {
+  background: var(--upload-bg);
+  backdrop-filter: blur(10px);
+  border: 2px dashed var(--primary-color);
+  transition: all 0.3s ease;
+}
+.upload-label:hover {
+  background: var(--upload-hover);
+  transform: scale(1.05);
+}
+
+.select-theme {
+  background-color: var(--select-bg);
+  color: var(--select-text);
+}
+
+:root {
+   --select-bg: #ffffff; /* Warna latar belakang select di light mode */
+  --select-text: #1f2937; /* Warna teks select di light mode */
+  --bg-color: #f3f4f6;
+  --text-color: #1f2937;
+  --navbar-bg: rgba(255, 255, 255, 0.8);
+  --modal-bg: rgba(255, 255, 255, 0.9);
+  --border-color: rgba(0, 0, 0, 0.1);
+  --primary-color: #4f46e5;
+  --primary-hover: #4338ca;
+  --upload-bg: rgba(255, 255, 255, 0.9);
+  --upload-hover: rgba(79, 70, 229, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+.dark {
+  --select-bg: #374151; /* Warna latar belakang select di dark mode */
+  --select-text: #f3f4f6; /* Warna teks select di dark mode */
+  --bg-color: #1f2937;
+  --text-color: #f3f4f6;
+  --navbar-bg: rgba(31, 41, 55, 0.8);
+  --modal-bg: rgba(31, 41, 55, 0.9);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --primary-color: #6366f1;
+  --primary-hover: #4f46e5;
+  --upload-bg: rgba(31, 41, 55, 0.9);
+  --upload-hover: rgba(99, 102, 241, 0.1);
+  --shadow-color: rgba(255, 255, 255, 0.1);
 }

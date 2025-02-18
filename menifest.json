@@ -1,0 +1,22 @@
+{
+  "short_name": "CameraApp",
+  "name": "CameraApp - Watermark Generator",
+  "description": "Aplikasi untuk menambahkan watermark ke gambar dengan mudah.",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#4f46e5"
+}
