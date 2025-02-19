@@ -1,6 +1,6 @@
 const CACHE_NAME = 'cameraapp-v1';
 const ASSETS = [
-  '/',
+  'https://codependek.github.io/Camera-mark/',
   '/index.html',
   '/app.js',
   '/styles.css',
