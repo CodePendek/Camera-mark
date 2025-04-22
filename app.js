@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
+  // Elemen DOM
   const uploadInput = document.getElementById('upload');
   const uploadLabel = document.getElementById('upload-label');
   const settingsModal = document.getElementById('settings');
@@ -15,43 +16,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let canvas;
 
-  // Daftar font yang digunakan
+  // Daftar font
   const fonts = [
     'Roboto', 'Barlow', 'Geo', 'Iceland', 'Pixelify Sans',
     'Dancing Script', 'Oswald', 'Playfair Display', 'Pacifico', 'Bebas Neue'
   ];
 
-  // Tunggu semua font benar-benar siap
-  await Promise.all(fonts.map(font => document.fonts.load(`bold 16px ${font}`)));
-  uploadLabel.classList.remove('opacity-50', 'pointer-events-none'); // Aktifkan UI setelah font siap
+  // Daftar opsi penyesuaian waktu (menit)
+  const waktuAdjustOptions = [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5];
 
-  // Fungsi untuk menampilkan toast
+  // Load font dengan fallback
+  try {
+    await Promise.all(fonts.map(font => document.fonts.load(`bold 16px ${font}`)));
+    uploadLabel.classList.remove('opacity-50', 'pointer-events-none'); // Aktifkan UI
+  } catch (e) {
+    showToast('Gagal load font, pake font default.', 'error');
+    document.getElementById('font').value = 'Arial';
+    uploadLabel.classList.remove('opacity-50', 'pointer-events-none');
+  }
+
+  // Fungsi tampilkan toast
   function showToast(message, type = 'info') {
     toastMessage.textContent = message;
-    toast.classList.remove('hidden');
-    toast.classList.remove('translate-y-10');
-    toast.classList.add('translate-y-0');
+    toast.classList.remove('hidden', 'translate-x-20');
+    toast.classList.add('translate-x-0');
     setTimeout(() => {
-      toast.classList.remove('translate-y-0');
-      toast.classList.add('translate-y-10');
+      toast.classList.remove('translate-x-0');
+      toast.classList.add('translate-x-20');
       setTimeout(() => toast.classList.add('hidden'), 300);
     }, 3000);
   }
 
-  // Fungsi untuk memuat preferensi dari localStorage
+  // Load preferensi dari localStorage
   function loadPreferences() {
     const savedPosisi = localStorage.getItem('watermarkPosisi') || 'center';
     const savedJam = localStorage.getItem('watermarkJam') || 'Masuk/Pulang';
     const savedFont = localStorage.getItem('watermarkFont') || 'Barlow';
-    const savedBulatkanWaktu = localStorage.getItem('watermarkBulatkanWaktu') === 'true';
+    const savedBulatkanWaktu = localStorage.getItem('watermarkBulatkanWaktu') || '5'; // Default 0 menit
 
     document.getElementById('posisi').value = savedPosisi;
     document.getElementById('jam').value = savedJam;
     document.getElementById('font').value = savedFont;
-    document.getElementById('bulatkanWaktu').checked = savedBulatkanWaktu;
+    document.getElementById('bulatkanWaktu').value = savedBulatkanWaktu;
   }
 
-  // Fungsi untuk menyimpan preferensi ke localStorage
+  // Simpan preferensi ke localStorage
   function savePreferences(posisi, jam, font, bulatkanWaktu) {
     localStorage.setItem('watermarkPosisi', posisi);
     localStorage.setItem('watermarkJam', jam);
@@ -59,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     localStorage.setItem('watermarkBulatkanWaktu', bulatkanWaktu);
   }
 
-  // Muat preferensi saat aplikasi dimulai
+  // Muat preferensi
   loadPreferences();
 
   // Handle file upload
@@ -68,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (file && file.type.startsWith('image/')) {
       settingsModal.showModal();
     } else {
-      showToast('File harus berupa gambar!', 'error');
+      showToast('Ups, file harus gambar (jpg, png, dll.)!', 'error');
     }
   });
 
@@ -79,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const file = uploadInput.files[0];
     const posisi = document.getElementById('posisi').value;
     const jam = document.getElementById('jam').value;
-    const bulatkanWaktu = document.getElementById('bulatkanWaktu').checked;
+    const bulatkanWaktu = document.getElementById('bulatkanWaktu').value;
     const font = document.getElementById('font').value;
 
     // Validasi waktu
@@ -96,9 +105,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     savePreferences(posisi, jam, font, bulatkanWaktu);
 
     // Format waktu
-    const waktuFormatted = formatWaktu(jam, bulatkanWaktu);
+    const waktuFormatted = formatWaktu(jam, waktuAdjustOptions[bulatkanWaktu]);
 
     // Proses watermark
+    showToast('Sedang memproses...', 'info');
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
@@ -119,25 +129,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Tampilkan preview
         previewImage.src = canvas.toDataURL();
         previewModal.showModal();
+        showToast('Gambar siap!', 'success');
       };
     };
     reader.readAsDataURL(file);
   });
 
-  // Fungsi untuk memformat waktu
-  function formatWaktu(jam, bulatkanWaktu) {
+  // Format waktu (sesuaikan menit sesuai slider)
+  function formatWaktu(jam, adjustMenit) {
     let [jamStr, menitStr] = jam.split(':');
     let jamNum = parseInt(jamStr, 10);
-    let menitNum = parseInt(menitStr, 10);
+    let menitNum = parseInt(menitStr, 10) + adjustMenit;
 
-    const randomMenit = Math.floor(Math.random() * 4);
-    const tambahAtauKurang = Math.random() < 0.5 ? -1 : 1;
-    menitNum += randomMenit * tambahAtauKurang;
-
-    if (bulatkanWaktu) {
-      menitNum = Math.round(menitNum / 5) * 5;
-    }
-
+    // Handle menit negatif atau lebih dari 60
     while (menitNum >= 60) {
       menitNum -= 60;
       jamNum += 1;
@@ -146,13 +150,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       menitNum += 60;
       jamNum -= 1;
     }
-
-    jamNum = (jamNum + 24) % 24;
+    jamNum = (jamNum + 24) % 24; // Handle jam negatif
 
     return `${String(jamNum).padStart(2, '0')}:${String(menitNum).padStart(2, '0')}`;
   }
 
-  // Fungsi untuk menambahkan watermark
+  // Tambahkan watermark ke gambar
   function addWatermark(canvas, ctx, text, posisi, font) {
     const fontSize = Math.floor(canvas.width * 0.03);
     const margin = Math.floor(canvas.width * 0.03);
@@ -203,25 +206,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     ctx.shadowOffsetY = 0;
   }
 
-  // Handle tombol Simpan
+  // Handle tombol Unduh di pratinjau
   simpanButton.addEventListener('click', () => {
-    if (canvas) {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-
-      const fileName = `watermark-${year}${month}${day}-${hours}${minutes}${seconds}.png`;
-      const link = document.createElement('a');
-      link.download = fileName;
-      link.href = canvas.toDataURL();
-      link.click();
-
-      showToast('Gambar berhasil diunduh!', 'success');
+    if (!canvas) {
+      showToast('Gambar belum siap!', 'error');
+      return;
     }
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    const fileName = `watermark-${year}${month}${day}-${hours}${minutes}${seconds}.png`;
+    const link = document.createElement('a');
+    link.download = fileName;
+    link.href = canvas.toDataURL();
+    link.click();
+
+    showToast('Yeay, gambar udah tersimpan!', 'success');
   });
 
   // Handle tombol Tangkap Ulang
@@ -233,25 +238,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Handle tombol Share
   shareButton.addEventListener('click', async () => {
-    if (canvas) {
-      const blob = await new Promise((resolve) => canvas.toBlob(resolve));
-      const file = new File([blob], 'watermarked-image.png', { type: 'image/png' });
-      const filesArray = [file];
+    if (!canvas) {
+      showToast('Gambar belum siap!', 'error');
+      return;
+    }
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve));
+    const file = new File([blob], 'watermarked-image.png', { type: 'image/png' });
+    const filesArray = [file];
 
-      if (navigator.canShare && navigator.canShare({ files: filesArray })) {
-        try {
-          await navigator.share({
-            files: filesArray,
-            title: 'Watermarked Image',
-            text: 'Check out my watermarked image from CameraApp!',
-          });
-          showToast('Gambar berhasil dibagikan!', 'success');
-        } catch (error) {
-          showToast('Gagal membagikan gambar.', 'error');
-        }
-      } else {
-        showToast('Fitur share tidak didukung di perangkat ini.', 'error');
+    if (navigator.canShare && navigator.canShare({ files: filesArray })) {
+      try {
+        await navigator.share({
+          files: filesArray,
+          title: 'Gambar dengan Watermark',
+          text: 'Lihat gambar dengan watermark dari KameraMark!',
+        });
+        showToast('Gambar berhasil dibagikan!', 'success');
+      } catch (error) {
+        showToast('Gagal membagikan gambar.', 'error');
       }
+    } else {
+      showToast('Fitur share nggak didukung di perangkat ini.', 'error');
     }
   });
 
@@ -272,6 +279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   feather.replace();
 });
 
+// Daftar Service Worker untuk PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
